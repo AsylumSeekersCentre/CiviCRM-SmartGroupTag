@@ -12,12 +12,11 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
-
-
-function entity_tag_delete_example() {
+function delete_tag_from_contact($tag_id, $contact_id) {
+  echo "Deleting " . $tag_id . " from " . $contact_id . "\n";
   $params = array(
-    'contact_id_h' => 3161,
-    'tag_id' => '7',
+    'contact_id_h' => $contact_id,
+    'tag_id' => $tag_id,
   );
   try{
     $result = civicrm_api3('EntityTag', 'delete', $params);
@@ -37,11 +36,16 @@ function entity_tag_delete_example() {
   return $result;
 }
 
-function entity_tag_create_example() {
+function delete_tag_from_contacts($tag_id, $contacts) {
+  foreach ($contacts as $contact_id => $contact_data) {
+    delete_tag_from_contact ($tag_id, $contact_id);
+  }
+}
+
+function add_tag_to_contact ($tag_id, $contact_id) {
   $params = array(
-    'contact_id' => 3161, // contact: Jude Hungerford
-    'tag_id' => 7, // Major Donor
-//    'name' => 'Default',
+    'contact_id' => $contact_id,
+    'tag_id' => $tag_id,
   );
   try{
     $result = civicrm_api3('EntityTag', 'create', $params);
@@ -81,12 +85,28 @@ function load_map($filename) {
   return $map;
 }
 
+function get_tagged_contacts ($tag_id) {
+  $contactParams = array(
+    'version' => 3,
+    'tag'=> $tag_id,
+  );
+  return civicrm_api3("Contact","get", $contactParams)['values'];
+}
+
 function delete_tags($tag_map) {
   foreach ($tag_map as $tag => $smart_group) {
     $extant = civicrm_api3('Tag', 'get', array(
       'name' => $tag,
     ));
-    echo 'tags = ' . json_encode($extant['values']) . '\n';
+    // workaround to unpack result from return format
+    foreach($extant['values'] as $value) { 
+      if ($value['name'] == $tag) {
+        $id = $value['id'];
+        $contacts = get_tagged_contacts($id);
+        delete_tag_from_contacts($id, $contacts);
+      }
+    };
+//    echo '<pre>tags = ' . json_encode($extant['values']) . '\n</pre>';
 //    civicrm_api3
   }
 }
@@ -102,6 +122,7 @@ function delete_tags($tag_map) {
  */
 function civicrm_api3_smarttag_Updatetags($params) {
 //  $example_result = entity_tag_delete_example();
+//  add_tag_to_contact(3161, 7);
   $tag_map = load_map("map.txt");
   echo "<pre>" . json_encode($tag_map) . "</pre>\n";
   delete_tags($tag_map);
