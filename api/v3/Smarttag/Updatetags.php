@@ -12,6 +12,72 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
+function get_group_id($group_name) {
+  echo $group_name;
+  $params = array(
+    'name' => $group_name,
+  );
+ 
+  try{
+    $result = null;
+    $table = civicrm_api3('Group', 'get', $params);
+    echo "aaa\n" . json_encode($table);
+    foreach ($table['values'] as $mgroup) {
+      echo json_encode($mgroup);
+      if ($mgroup['name'] == $group_name) {
+        $result = $mgroup['id'];
+      }
+    };
+    return $result;
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    // Handle error here.
+    $errorMessage = $e->getMessage();
+    $errorCode = $e->getErrorCode();
+    $errorData = $e->getExtraParams();
+    return array(
+      'is_error' => 1,
+      'error_message' => $errorMessage,
+      'error_code' => $errorCode,
+      'error_data' => $errorData,
+    );
+  }
+ 
+  return $result;
+}
+
+function contact_get_smart_group($group_name) {
+//  echo $group_name . '\n';
+  $group_id = get_group_id($group_name);
+  $params = array(
+//    'group' => $group_name,
+    'group' => array(
+      'IN' => array(
+        '0' => $group_id,
+      ),
+    )
+  );
+ 
+  try{
+    $result = civicrm_api3('Contact', 'get', $params);
+//    echo json_encode($result);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    // Handle error here.
+    $errorMessage = $e->getMessage();
+    $errorCode = $e->getErrorCode();
+    $errorData = $e->getExtraParams();
+    return array(
+      'is_error' => 1,
+      'error_message' => $errorMessage,
+      'error_code' => $errorCode,
+      'error_data' => $errorData,
+    );
+  }
+ 
+  return $result['values'];
+}
+
 function delete_tag_from_contact($tag_id, $contact_id) {
   echo "Deleting " . $tag_id . " from " . $contact_id . "\n";
   $params = array(
@@ -110,6 +176,15 @@ function delete_tags($tag_map) {
   }
 }
 
+function apply_tags($tag_map) {
+  echo json_encode($tag_map);
+  foreach ($tag_map as $tag => $smart_group) {
+//    echo 'something\n';
+    $contacts = contact_get_smart_group($smart_group);
+    echo '<pre>Contacts:\n' . json_encode($contacts) . '</pre>';
+  }
+}
+
 /**
  * Smarttag.Updatetags API
  *
@@ -123,5 +198,6 @@ function civicrm_api3_smarttag_Updatetags($params) {
   $tag_map = load_map("map.txt");
 //  echo "<pre>" . json_encode($tag_map) . "</pre>\n";
   delete_tags($tag_map);
+  apply_tags($tag_map);
   return civicrm_api3_create_success($example_result, $params, 'Smarttag', 'Updatetags');
 }
