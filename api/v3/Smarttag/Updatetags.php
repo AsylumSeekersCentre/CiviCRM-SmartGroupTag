@@ -98,6 +98,7 @@ function delete_tags($tag_map) {
     $extant = civicrm_api3('Tag', 'get', array(
       'name' => $tag,
     ));
+
     // workaround to unpack result from return format
     foreach($extant['values'] as $value) { 
       if ($value['name'] == $tag) {
@@ -106,8 +107,6 @@ function delete_tags($tag_map) {
         delete_tag_from_contacts($id, $contacts);
       }
     };
-//    echo '<pre>tags = ' . json_encode($extant['values']) . '\n</pre>';
-//    civicrm_api3
   }
 }
 
@@ -121,28 +120,8 @@ function delete_tags($tag_map) {
  * @throws API_Exception
  */
 function civicrm_api3_smarttag_Updatetags($params) {
-//  $example_result = entity_tag_delete_example();
-//  add_tag_to_contact(3161, 7);
   $tag_map = load_map("map.txt");
-  echo "<pre>" . json_encode($tag_map) . "</pre>\n";
+//  echo "<pre>" . json_encode($tag_map) . "</pre>\n";
   delete_tags($tag_map);
   return civicrm_api3_create_success($example_result, $params, 'Smarttag', 'Updatetags');
-/*
-  if (array_key_exists('magicword', $params) && $params['magicword'] == 'sesame') {
-    $returnValues = array(
-      // OK, return several data rows
-      12 => array('id' => 12, 'name' => 'Twelve'),
-      34 => array('id' => 34, 'name' => 'Thirty four'),
-      56 => array('id' => 56, 'name' => 'Fifty six'),
-    );
-*/
-    // ALTERNATIVE: $returnValues = array(); // OK, success
-    // ALTERNATIVE: $returnValues = array("Some value"); // OK, return a single value
-
-    // Spec: civicrm_api3_create_success($values = 1, $params = array(), $entity = NULL, $action = NULL)
-//    return civicrm_api3_create_success($returnValues, $params, 'NewEntity', 'NewAction');
-//  }
-//  else {
-//    throw new API_Exception(/*errorMessage*/ 'Everyone knows that the magicword is "sesame"', /*errorCode*/ 1234);
-//  }
 }
