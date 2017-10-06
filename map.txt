@@ -1,4 +1,4 @@
 pony,island
 cloud,land
-Default,tag
-Major Donor,Hungerford
+Major Donor,tag
+Default,Hungerford

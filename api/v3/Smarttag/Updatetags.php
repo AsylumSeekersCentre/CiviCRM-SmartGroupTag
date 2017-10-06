@@ -35,33 +35,6 @@ function get_group_id($group_name_untrimmed) {
   echo_json($result);
   return $result;
 
-/* 
-  try{
-    $result = null;
-    $table = civicrm_api3('Group', 'get', $params);
-    echo "aaa\n" . json_encode($table);
-    foreach ($table['values'] as $mgroup) {
-      echo json_encode($mgroup);
-      if ($mgroup['name'] == $group_name) {
-        $result = $mgroup['id'];
-      }
-    };
-    return $result;
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    // Handle error here.
-    $errorMessage = $e->getMessage();
-    $errorCode = $e->getErrorCode();
-    $errorData = $e->getExtraParams();
-    return array(
-      'is_error' => 1,
-      'error_message' => $errorMessage,
-      'error_code' => $errorCode,
-      'error_data' => $errorData,
-    );
-  }
-  return $result;
-*/
 }
 
 function contact_get_smart_group($group_name) {
@@ -115,7 +88,7 @@ function delete_tag_from_contact($tag_id, $contact_id) {
     $result = civicrm_api3('EntityTag', 'delete', $params);
   }
   catch (CiviCRM_API3_Exception $e) {
-    // Handle error here.
+    // Handle error here. // FIXME Or not. Error handling to be reviewed.
     $errorMessage = $e->getMessage();
     $errorCode = $e->getErrorCode();
     $errorData = $e->getExtraParams();
@@ -154,7 +127,7 @@ function add_tag_to_contact ($tag, $contact_id) {
     $result = civicrm_api3('EntityTag', 'create', $params);
   }
   catch (CiviCRM_API3_Exception $e) {
-    // Handle error here.
+    // Handle error here. // FIXME as above.
     $errorMessage = $e->getMessage();
     $errorCode = $e->getErrorCode();
     $errorData = $e->getExtraParams();
@@ -219,7 +192,6 @@ function apply_tags($tag_map) {
     foreach ($contacts as $contact_id => $contact) {
       add_tag_to_contact ($tag, $contact_id);
     }
-//    echo '<pre>Contacts:\n' . json_encode($contacts) . '</pre>';
   }
 }
 
