@@ -12,12 +12,30 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
-function get_group_id($group_name) {
-  echo $group_name;
+function echo_json($v) {
+  echo '<pre>' . json_encode($v) . '</pre>';
+}
+
+function get_group_id($group_name_untrimmed) {
+  $group_name = ltrim(rtrim($group_name_untrimmed));
+//  echo $group_name;
   $params = array(
-    'name' => $group_name,
+    'sequential' => 1,
+    'title' => $group_name,
   );
- 
+  $table = civicrm_api3('Group', 'get', $params);
+//  echo_json($table);
+  $result = null;
+  foreach ($table['values'] as $mgroup) {
+//    echo json_encode($mgroup);
+    if ($mgroup['title'] == $group_name) {
+      $result = $mgroup['id'];
+    }
+  };
+  echo_json($result);
+  return $result;
+
+/* 
   try{
     $result = null;
     $table = civicrm_api3('Group', 'get', $params);
@@ -42,44 +60,53 @@ function get_group_id($group_name) {
       'error_data' => $errorData,
     );
   }
- 
   return $result;
+*/
 }
 
 function contact_get_smart_group($group_name) {
 //  echo $group_name . '\n';
   $group_id = get_group_id($group_name);
-  $params = array(
-//    'group' => $group_name,
-    'group' => array(
-      'IN' => array(
-        '0' => $group_id,
-      ),
-    )
-  );
- 
-  try{
-    $result = civicrm_api3('Contact', 'get', $params);
-//    echo json_encode($result);
+  if ($group_id == null) {
+    echo 'Null group ' . $group_name;
+//    throw new Exception('Non-existant group passed to contact_get_smart_group'); // FIXME if this line is added, the process will crash if there's a bad group name in the mapping file.
   }
-  catch (CiviCRM_API3_Exception $e) {
-    // Handle error here.
-    $errorMessage = $e->getMessage();
-    $errorCode = $e->getErrorCode();
-    $errorData = $e->getExtraParams();
-    return array(
-      'is_error' => 1,
-      'error_message' => $errorMessage,
-      'error_code' => $errorCode,
-      'error_data' => $errorData,
-    );
+  else {
+// FIXME Leaving this here for now - the examples suggest this is the correct
+// structure for this query, but the one used below is simpler and works.
+// More investigation to follow.
+//  $params = array(
+//    'group' => array(
+//      'IN' => $group_id, //array(
+//        '0' => $group_id,
+ //     ),
+//    )
+//  );
+    $params = array();
+    $params['group'] = $group_id;
+   
+    try{
+      $result = civicrm_api3('Contact', 'get', $params);
+      echo_json($result);
+      return $result['values'];
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // Handle error here.
+      $errorMessage = $e->getMessage();
+      $errorCode = $e->getErrorCode();
+      $errorData = $e->getExtraParams();
+      return array(
+        'is_error' => 1,
+        'error_message' => $errorMessage,
+        'error_code' => $errorCode,
+        'error_data' => $errorData,
+      );
+    }
   }
- 
-  return $result['values'];
 }
 
 function delete_tag_from_contact($tag_id, $contact_id) {
-  echo "Deleting " . $tag_id . " from " . $contact_id . "\n";
+//  echo "Deleting " . $tag_id . " from " . $contact_id . "\n";
   $params = array(
     'contact_id_h' => $contact_id,
     'tag_id' => $tag_id,
@@ -108,7 +135,17 @@ function delete_tag_from_contacts($tag_id, $contacts) {
   }
 }
 
-function add_tag_to_contact ($tag_id, $contact_id) {
+function get_tag_id ($tag) {
+  $data = civicrm_api3('Tag', 'get', array(
+    'sequential' => 1,
+      'name' => $tag,
+  ));
+  return $data['id'];
+}
+
+function add_tag_to_contact ($tag, $contact_id) {
+  echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
+  $tag_id = get_tag_id($tag);
   $params = array(
     'contact_id' => $contact_id,
     'tag_id' => $tag_id,
@@ -177,13 +214,15 @@ function delete_tags($tag_map) {
 }
 
 function apply_tags($tag_map) {
-  echo json_encode($tag_map);
   foreach ($tag_map as $tag => $smart_group) {
-//    echo 'something\n';
     $contacts = contact_get_smart_group($smart_group);
-    echo '<pre>Contacts:\n' . json_encode($contacts) . '</pre>';
+    foreach ($contacts as $contact_id => $contact) {
+      add_tag_to_contact ($tag, $contact_id);
+    }
+//    echo '<pre>Contacts:\n' . json_encode($contacts) . '</pre>';
   }
 }
+
 
 /**
  * Smarttag.Updatetags API
@@ -196,8 +235,8 @@ function apply_tags($tag_map) {
  */
 function civicrm_api3_smarttag_Updatetags($params) {
   $tag_map = load_map("map.txt");
-//  echo "<pre>" . json_encode($tag_map) . "</pre>\n";
   delete_tags($tag_map);
   apply_tags($tag_map);
   return civicrm_api3_create_success($example_result, $params, 'Smarttag', 'Updatetags');
 }
+
