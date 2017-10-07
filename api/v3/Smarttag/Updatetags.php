@@ -16,33 +16,28 @@ function echo_json($v) {
   echo '<pre>' . json_encode($v) . '</pre>';
 }
 
-function get_group_id($group_name_untrimmed) {
-  $group_name = ltrim(rtrim($group_name_untrimmed));
-//  echo $group_name;
+function get_group_id($group_name) {
   $params = array(
     'sequential' => 1,
     'title' => $group_name,
   );
   $table = civicrm_api3('Group', 'get', $params);
-//  echo_json($table);
   $result = null;
   foreach ($table['values'] as $mgroup) {
-//    echo json_encode($mgroup);
     if ($mgroup['title'] == $group_name) {
       $result = $mgroup['id'];
     }
   };
-  echo_json($result);
   return $result;
 
 }
 
 function contact_get_smart_group($group_name) {
-//  echo $group_name . '\n';
   $group_id = get_group_id($group_name);
   if ($group_id == null) {
     echo 'Null group ' . $group_name;
-//    throw new Exception('Non-existant group passed to contact_get_smart_group'); // FIXME if this line is added, the process will crash if there's a bad group name in the mapping file.
+// FIXME if the next line is added, the process will crash if there's a bad group name in the mapping file.
+//    throw new Exception('Non-existant group passed to contact_get_smart_group'); 
   }
   else {
 // FIXME Leaving this here for now - the examples suggest this is the correct
@@ -58,53 +53,8 @@ function contact_get_smart_group($group_name) {
     $params = array();
     $params['group'] = $group_id;
    
-    try{
-      $result = civicrm_api3('Contact', 'get', $params);
-      echo_json($result);
-      return $result['values'];
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      // Handle error here.
-      $errorMessage = $e->getMessage();
-      $errorCode = $e->getErrorCode();
-      $errorData = $e->getExtraParams();
-      return array(
-        'is_error' => 1,
-        'error_message' => $errorMessage,
-        'error_code' => $errorCode,
-        'error_data' => $errorData,
-      );
-    }
-  }
-}
-
-function delete_tag_from_contact($tag_id, $contact_id) {
-//  echo "Deleting " . $tag_id . " from " . $contact_id . "\n";
-  $params = array(
-    'contact_id_h' => $contact_id,
-    'tag_id' => $tag_id,
-  );
-  try{
-    $result = civicrm_api3('EntityTag', 'delete', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    // Handle error here. // FIXME Or not. Error handling to be reviewed.
-    $errorMessage = $e->getMessage();
-    $errorCode = $e->getErrorCode();
-    $errorData = $e->getExtraParams();
-    return array(
-      'is_error' => 1,
-      'error_message' => $errorMessage,
-      'error_code' => $errorCode,
-      'error_data' => $errorData,
-    );
-  }
-  return $result;
-}
-
-function delete_tag_from_contacts($tag_id, $contacts) {
-  foreach ($contacts as $contact_id => $contact_data) {
-    delete_tag_from_contact ($tag_id, $contact_id);
+    $result = civicrm_api3('Contact', 'get', $params);
+    return $result['values'];
   }
 }
 
@@ -117,38 +67,23 @@ function get_tag_id ($tag) {
 }
 
 function add_tag_to_contact ($tag, $contact_id) {
-  echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
+  //echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
   $tag_id = get_tag_id($tag);
+
   $params = array(
     'contact_id' => $contact_id,
     'tag_id' => $tag_id,
   );
-  try{
-    $result = civicrm_api3('EntityTag', 'create', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    // Handle error here. // FIXME as above.
-    $errorMessage = $e->getMessage();
-    $errorCode = $e->getErrorCode();
-    $errorData = $e->getExtraParams();
-    return array(
-      'error' => $errorMessage,
-      'error_code' => $errorCode,
-      'error_data' => $errorData,
-    );
-  }
+
+  $result = civicrm_api3('EntityTag', 'create', $params);
   return $result;
 }
 
 function split_file_strings($strings) {
   $result = array();
-  try {
-    foreach ($strings as $string) {
-      $pair = explode(',', $string);
-      $result[$pair[0]] = $pair[1];
-    };
-  } catch (Exception $e) {
-    echo '<pre>Caught exception: ',  $e->getMessage(), "\n</pre>"; // FIXME
+  foreach ($strings as $string) {
+    $pair = explode(',', $string);
+    $result[$pair[0]] = $pair[1];
   };
   return $result;
 }
@@ -169,25 +104,42 @@ function get_tagged_contacts ($tag_id) {
   return civicrm_api3("Contact","get", $contactParams)['values'];
 }
 
+function delete_tag_from_contact($tag_id, $contact_id) {
+  //echo 'Deleting ' . $tag_id . ' from ' . $contact_id . '\n';
+  $params = array(
+    'contact_id_h' => $contact_id,
+    'tag_id' => $tag_id,
+  );
+  $result = civicrm_api3('EntityTag', 'delete', $params);
+  return $result;
+}
+
+function delete_tag_from_contacts($tag_id, $contacts) {
+  foreach ($contacts as $contact_id => $contact_data) {
+    delete_tag_from_contact ($tag_id, $contact_id);
+  }
+}
+
 function delete_tags($tag_map) {
   foreach ($tag_map as $tag => $smart_group) {
-    $extant = civicrm_api3('Tag', 'get', array(
+    $to_delete = civicrm_api3('Tag', 'get', array(
       'name' => $tag,
     ));
 
-    // workaround to unpack result from return format
-    foreach($extant['values'] as $value) { 
+    // This foreach is expected to unpack a single result.
+    foreach($to_delete['values'] as $value) { 
       if ($value['name'] == $tag) {
-        $id = $value['id'];
-        $contacts = get_tagged_contacts($id);
-        delete_tag_from_contacts($id, $contacts);
+        $tag_id = $value['id'];
+        $contacts = get_tagged_contacts($tag_id);
+        delete_tag_from_contacts($tag_id, $contacts);
       }
     };
   }
 }
 
 function apply_tags($tag_map) {
-  foreach ($tag_map as $tag => $smart_group) {
+  foreach ($tag_map as $tag => $smart_group_untrimmed) {
+    $smart_group = ltrim(rtrim($smart_group_untrimmed));
     $contacts = contact_get_smart_group($smart_group);
     foreach ($contacts as $contact_id => $contact) {
       add_tag_to_contact ($tag, $contact_id);
@@ -206,9 +158,16 @@ function apply_tags($tag_map) {
  * @throws API_Exception
  */
 function civicrm_api3_smarttag_Updatetags($params) {
-  $tag_map = load_map("map.txt");
-  delete_tags($tag_map);
-  apply_tags($tag_map);
-  return civicrm_api3_create_success($example_result, $params, 'Smarttag', 'Updatetags');
+  try {
+    $tag_map = load_map("map.txt");
+    delete_tags($tag_map);
+    apply_tags($tag_map);
+    return civicrm_api3_create_success(array(), $params, 'Smarttag', 'Updatetags');
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    // Handle error here.
+    $error_message = $e->getMessage();
+    return civicrm_api3_create_error($error_message);
+  }
 }
 
