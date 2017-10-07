@@ -36,22 +36,21 @@ function contact_get_smart_group($group_name) {
   $group_id = get_group_id($group_name);
   if ($group_id == null) {
     echo 'Null group ' . $group_name;
-// FIXME if the next line is added, the process will crash if there's a bad group name in the mapping file.
+// If the next line is added, the process will crash if there's a bad group name in the mapping file.
 //    throw new Exception('Non-existant group passed to contact_get_smart_group'); 
   }
   else {
-// FIXME Leaving this here for now - the examples suggest this is the correct
-// structure for this query, but the one used below is simpler and works.
-// More investigation to follow.
-//  $params = array(
-//    'group' => array(
-//      'IN' => $group_id, //array(
-//        '0' => $group_id,
- //     ),
-//    )
-//  );
-    $params = array();
-    $params['group'] = $group_id;
+   $params = array(
+    'group' => array(
+      'IN' => array(
+        '0' => $group_id,
+      ),
+    )
+   );
+// This also works and is simpler than the above. Why is the above structure
+// recommended in the examples?
+//    $params = array();
+//    $params['group'] = $group_id;
    
     $result = civicrm_api3('Contact', 'get', $params);
     return $result['values'];
