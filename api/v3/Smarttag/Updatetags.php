@@ -14,10 +14,7 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 
 function log_message($message) {
   CRM_Core_Error::debug_log_message($message);
-//  CRM_Core_error::debug($title, $message)
 }
-/*
-*/
 
 function echo_json($v) {
   echo '<pre>' . json_encode($v) . '</pre>';
@@ -128,22 +125,26 @@ function delete_tag_from_contacts($tag_id, $contacts) {
   }
 }
 
+function delete_tag($tag) {
+  $to_delete = civicrm_api3('Tag', 'get', array(
+    'name' => $tag,
+  ));
+
+  // This foreach is expected to unpack and process a single result.
+  foreach($to_delete['values'] as $value) { 
+    if ($value['name'] == $tag) {
+      $tag_id = $value['id'];
+      $contacts = get_tagged_contacts($tag_id);
+      delete_tag_from_contacts($tag_id, $contacts);
+    }
+  };
+}
+
 function delete_tags($tag_map) {
   // No need to filter for sensible tags here, if the tag doesn't exist
   // the query will not return any contacts to process.
   foreach ($tag_map as $tag => $smart_group) {
-    $to_delete = civicrm_api3('Tag', 'get', array(
-      'name' => $tag,
-    ));
-
-    // This foreach is expected to unpack and process a single result.
-    foreach($to_delete['values'] as $value) { 
-      if ($value['name'] == $tag) {
-        $tag_id = $value['id'];
-        $contacts = get_tagged_contacts($tag_id);
-        delete_tag_from_contacts($tag_id, $contacts);
-      }
-    };
+    delete_tag($tag);
   }
 }
 
@@ -171,6 +172,34 @@ function apply_tags($tag_map) {
   return $tally;
 }
 
+function delete_and_apply_tags($tag_map) {
+  $tally = array();
+  foreach ($tag_map as $tag => $smart_group) {
+    try {
+
+      delete_tag($tag);
+
+      if (!(array_key_exists($tag, $tally))) {
+        $tally[$tag] = 0;
+      };
+      $contacts = contact_get_smart_group($smart_group);
+      if ($contacts != null) {
+        foreach ($contacts as $contact_id => $contact) {
+          add_tag_to_contact ($tag, $contact_id);
+          $tally[$tag] += 1;
+        }
+      };
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
+      log_message($error_message);
+      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
+    }
+  }
+  return $tally;
+  
+}
+
 
 /**
  * Smarttag.Updatetags API
@@ -184,12 +213,13 @@ function apply_tags($tag_map) {
 function civicrm_api3_smarttag_Updatetags($params) {
   try {
     $tag_map = load_map("map.txt");
-    delete_tags($tag_map);
-    $tally = apply_tags($tag_map);
+//    delete_tags($tag_map);
+//    $tally = apply_tags($tag_map);
+    $tally = delete_and_apply_tags($tag_map);
     $message = 'UpdateTags Success: ' . json_encode($tally);
     log_message ($message);
     CRM_Core_Session::setStatus($message, 'Success', 'no-popup');
-//    header("Refresh:0"); // FIXME want to refresh the page to display status messages, but this does not work.
+//    header("Refresh:0"); // FIXME I want to refresh the page to display status messages, but this does not work.
     return civicrm_api3_create_success(array(), $params, 'Smarttag', 'Updatetags');
   }
   catch (CiviCRM_API3_Exception $e) {
