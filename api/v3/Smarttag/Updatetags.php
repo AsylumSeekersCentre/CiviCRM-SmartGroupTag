@@ -24,6 +24,7 @@ function get_group_id($group_name) {
   $params = array(
     'sequential' => 1,
     'title' => $group_name,
+    'rowCount' => 0,
   );
   $table = civicrm_api3('Group', 'get', $params);
   $result = null;
@@ -45,6 +46,7 @@ function contact_get_smart_group($group_name) {
   }
   else {
    $params = array(
+    'rowCount' => 0,
     'group' => array(
       'IN' => array(
         '0' => $group_id,
@@ -66,7 +68,8 @@ function contact_get_smart_group($group_name) {
 function get_tag_id ($tag) {
   $data = civicrm_api3('Tag', 'get', array(
     'sequential' => 1,
-      'name' => $tag,
+    'name' => $tag,
+    'rowCount' => 0,
   ));
   return $data['id'];
 }
@@ -105,6 +108,7 @@ function get_tagged_contacts ($tag_id) {
   $contactParams = array(
     'version' => 3,
     'tag'=> $tag_id,
+    'rowCount' => 0,
   );
   return civicrm_api3("Contact","get", $contactParams)['values'];
 }
@@ -128,6 +132,7 @@ function delete_tag_from_contacts($tag_id, $contacts) {
 function delete_tag($tag) {
   $to_delete = civicrm_api3('Tag', 'get', array(
     'name' => $tag,
+    'rowCount' => 0,
   ));
 
   // This foreach is expected to unpack and process a single result.
