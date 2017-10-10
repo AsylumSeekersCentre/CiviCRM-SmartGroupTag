@@ -12,6 +12,13 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
+/*
+function log_message($title, $message) {
+//  CRM_Core_error::debug($title, $message)
+//  CRM_Core_Session::setStatus($error_message, 'contact_get_smart_group failure in SmartTag.UpdateTags', 'no-popup');
+}
+*/
+
 function echo_json($v) {
   echo '<pre>' . json_encode($v) . '</pre>';
 }
@@ -35,7 +42,10 @@ function get_group_id($group_name) {
 function contact_get_smart_group($group_name) {
   $group_id = get_group_id($group_name);
   if ($group_id == null) {
-    echo 'Null group ' . $group_name;
+    $error_message = 'No group named ' . $group_name;
+//    echo $error_message;
+//    log_message($error_message, $error_message);
+    CRM_Core_Session::setStatus(ts($error_message), ts('contact_get_smart_group failure in SmartTag.UpdateTags'), 'no-popup');
 // If the next line is added, the process will crash if there's a bad group name in the mapping file.
 //    throw new Exception('Non-existant group passed to contact_get_smart_group'); 
   }
@@ -48,7 +58,9 @@ function contact_get_smart_group($group_name) {
     )
    );
 // This also works and is simpler than the above. Why is the above structure
-// recommended in the examples?
+// recommended in the examples? It would make sense if we wanted to check if
+// the contact is in any of a set of groups, but for a single group I would
+// prefer the simple structure below, unless I'm missing something.
 //    $params = array();
 //    $params['group'] = $group_id;
    
@@ -66,7 +78,7 @@ function get_tag_id ($tag) {
 }
 
 function add_tag_to_contact ($tag, $contact_id) {
-  //echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
+  echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
   $tag_id = get_tag_id($tag);
 
   $params = array(
@@ -82,7 +94,7 @@ function split_file_strings($strings) {
   $result = array();
   foreach ($strings as $string) {
     $pair = explode(',', $string);
-    $result[$pair[0]] = $pair[1];
+    $result[ltrim(rtrim($pair[0]))] = ltrim(rtrim($pair[1]));
   };
   return $result;
 }
@@ -120,12 +132,14 @@ function delete_tag_from_contacts($tag_id, $contacts) {
 }
 
 function delete_tags($tag_map) {
+  // No need to filter for sensible tags here, if the tag doesn't exist
+  // the query will not return any contacts to process.
   foreach ($tag_map as $tag => $smart_group) {
     $to_delete = civicrm_api3('Tag', 'get', array(
       'name' => $tag,
     ));
 
-    // This foreach is expected to unpack a single result.
+    // This foreach is expected to unpack and process a single result.
     foreach($to_delete['values'] as $value) { 
       if ($value['name'] == $tag) {
         $tag_id = $value['id'];
@@ -137,11 +151,21 @@ function delete_tags($tag_map) {
 }
 
 function apply_tags($tag_map) {
+  // trimming smart_group_untrimmed should no longer be necessary - these 
+  // strings are now trimmed upon loading from file. To fix and check. FIXME
   foreach ($tag_map as $tag => $smart_group_untrimmed) {
-    $smart_group = ltrim(rtrim($smart_group_untrimmed));
-    $contacts = contact_get_smart_group($smart_group);
-    foreach ($contacts as $contact_id => $contact) {
-      add_tag_to_contact ($tag, $contact_id);
+    try {
+      $smart_group = ltrim(rtrim($smart_group_untrimmed));
+      $contacts = contact_get_smart_group($smart_group);
+      foreach ($contacts as $contact_id => $contact) {
+        add_tag_to_contact ($tag, $contact_id);
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
+      echo $error_message;
+      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
+//      log_message($error_message, 'apply_tags failure in SmartTag.UpdateTags')
     }
   }
 }
@@ -158,6 +182,7 @@ function apply_tags($tag_map) {
  */
 function civicrm_api3_smarttag_Updatetags($params) {
   try {
+//  civicrm_api3_status('This is a message', '');
     $tag_map = load_map("map.txt");
     delete_tags($tag_map);
     apply_tags($tag_map);

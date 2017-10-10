@@ -1,2 +1,3 @@
-Major Donor,someTag
+Major Donor,someGroup
 Default,Hungerford
+NonTag,Hungerford
