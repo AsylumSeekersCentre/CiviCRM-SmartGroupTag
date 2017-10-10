@@ -12,11 +12,11 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
-/*
-function log_message($title, $message) {
+function log_message($message) {
+  CRM_Core_Error::debug_log_message($message);
 //  CRM_Core_error::debug($title, $message)
-//  CRM_Core_Session::setStatus($error_message, 'contact_get_smart_group failure in SmartTag.UpdateTags', 'no-popup');
 }
+/*
 */
 
 function echo_json($v) {
@@ -43,11 +43,8 @@ function contact_get_smart_group($group_name) {
   $group_id = get_group_id($group_name);
   if ($group_id == null) {
     $error_message = 'No group named ' . $group_name;
-//    echo $error_message;
-//    log_message($error_message, $error_message);
+    log_message($error_message);
     CRM_Core_Session::setStatus(ts($error_message), ts('contact_get_smart_group failure in SmartTag.UpdateTags'), 'no-popup');
-// If the next line is added, the process will crash if there's a bad group name in the mapping file.
-//    throw new Exception('Non-existant group passed to contact_get_smart_group'); 
   }
   else {
    $params = array(
@@ -78,7 +75,7 @@ function get_tag_id ($tag) {
 }
 
 function add_tag_to_contact ($tag, $contact_id) {
-  echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
+//  echo 'Adding tag ' . $tag . ' to contact ' . $contact_id . '\n';
   $tag_id = get_tag_id($tag);
 
   $params = array(
@@ -151,23 +148,27 @@ function delete_tags($tag_map) {
 }
 
 function apply_tags($tag_map) {
-  // trimming smart_group_untrimmed should no longer be necessary - these 
-  // strings are now trimmed upon loading from file. To fix and check. FIXME
-  foreach ($tag_map as $tag => $smart_group_untrimmed) {
+  $tally = array();
+  foreach ($tag_map as $tag => $smart_group) {
     try {
-      $smart_group = ltrim(rtrim($smart_group_untrimmed));
+      if (!(array_key_exists($tag, $tally))) {
+        $tally[$tag] = 0;
+      };
       $contacts = contact_get_smart_group($smart_group);
-      foreach ($contacts as $contact_id => $contact) {
-        add_tag_to_contact ($tag, $contact_id);
-      }
+      if ($contacts != null) {
+        foreach ($contacts as $contact_id => $contact) {
+          add_tag_to_contact ($tag, $contact_id);
+          $tally[$tag] += 1;
+        }
+      };
     }
     catch (CiviCRM_API3_Exception $e) {
       $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
-      echo $error_message;
+      log_message($error_message);
       CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
-//      log_message($error_message, 'apply_tags failure in SmartTag.UpdateTags')
     }
   }
+  return $tally;
 }
 
 
@@ -182,10 +183,13 @@ function apply_tags($tag_map) {
  */
 function civicrm_api3_smarttag_Updatetags($params) {
   try {
-//  civicrm_api3_status('This is a message', '');
     $tag_map = load_map("map.txt");
     delete_tags($tag_map);
-    apply_tags($tag_map);
+    $tally = apply_tags($tag_map);
+    $message = 'UpdateTags Success: ' . json_encode($tally);
+    log_message ($message);
+    CRM_Core_Session::setStatus($message, 'Success', 'no-popup');
+//    header("Refresh:0"); // FIXME want to refresh the page to display status messages, but this does not work.
     return civicrm_api3_create_success(array(), $params, 'Smarttag', 'Updatetags');
   }
   catch (CiviCRM_API3_Exception $e) {
