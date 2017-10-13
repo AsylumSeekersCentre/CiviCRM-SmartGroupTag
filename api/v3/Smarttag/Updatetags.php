@@ -217,11 +217,14 @@ function delete_and_apply_tags($tag_map) {
  */
 function civicrm_api3_smarttag_Updatetags($params) {
   try {
+    $starttime = time();
     $tag_map = load_map("map.txt");
 //    delete_tags($tag_map);
 //    $tally = apply_tags($tag_map);
     $tally = delete_and_apply_tags($tag_map);
-    $message = 'UpdateTags Success: ' . json_encode($tally);
+    $endtime = time();
+    $time_taken = $endtime - $starttime;
+    $message = 'UpdateTags Success in ' . $time_taken . ' seconds: ' . json_encode($tally);
     log_message ($message);
     CRM_Core_Session::setStatus($message, 'Success', 'no-popup');
 //    header("Refresh:0"); // FIXME I want to refresh the page to display status messages, but this does not work.
