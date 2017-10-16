@@ -39,6 +39,7 @@ function get_group_id($group_name) {
 
 function contact_get_smart_group($group_name) {
   $group_id = get_group_id($group_name);
+//  CRM_Core_Session::setStatus('Got group id ' . $group_id . ' for group ' . $group_name, 'Success', 'no-popup');
   if ($group_id == null) {
     $error_message = 'No group named ' . $group_name;
     log_message($error_message);
@@ -60,7 +61,9 @@ function contact_get_smart_group($group_name) {
 //    $params = array();
 //    $params['group'] = $group_id;
    
+//    CRM_Core_Session::setStatus('About to get contacts', 'Success', 'no-popup');
     $result = civicrm_api3('Contact', 'get', $params);
+//    CRM_Core_Session::setStatus('Returning contacts', 'Success', 'no-popup');
     return $result['values'];
   }
 }
@@ -182,15 +185,19 @@ function delete_and_apply_tags($tag_map) {
   foreach ($tag_map as $tag => $smart_group) {
     try {
 
+//      CRM_Core_Session::setStatus('Processing tag-group ' . $tag . ' - ' . $smart_group, 'Success', 'no-popup');
       delete_tag($tag);
+//      CRM_Core_Session::setStatus('Deleted tag ' . $tag, 'Success', 'no-popup');
 
       if (!(array_key_exists($tag, $tally))) {
         $tally[$tag] = 0;
       };
       $contacts = contact_get_smart_group($smart_group);
+//      CRM_Core_Session::setStatus('Got contacts ', 'Success', 'no-popup');
       if ($contacts != null) {
         foreach ($contacts as $contact_id => $contact) {
           add_tag_to_contact ($tag, $contact_id);
+//          CRM_Core_Session::setStatus('Tagged contact ' . $contact_id, 'Success', 'no-popup');
           $tally[$tag] += 1;
         }
       };
@@ -219,16 +226,18 @@ function civicrm_api3_smarttag_Updatetags($params) {
   try {
     $starttime = time();
     $tag_map = load_map("map.txt");
+//    CRM_Core_Session::setStatus('Tag map loaded', 'Success', 'no-popup');
 //    delete_tags($tag_map);
 //    $tally = apply_tags($tag_map);
     $tally = delete_and_apply_tags($tag_map);
+//    CRM_Core_Session::setStatus('Tag map processed', 'Success', 'no-popup');
     $endtime = time();
     $time_taken = $endtime - $starttime;
     $message = 'UpdateTags Success in ' . $time_taken . ' seconds: ' . json_encode($tally);
     log_message ($message);
     CRM_Core_Session::setStatus($message, 'Success', 'no-popup');
 //    header("Refresh:0"); // FIXME I want to refresh the page to display status messages, but this does not work.
-    return civicrm_api3_create_success(array(), $params, 'Smarttag', 'Updatetags');
+    return civicrm_api3_create_success($tally, $params, 'Smarttag', 'Updatetags');
   }
   catch (CiviCRM_API3_Exception $e) {
     // Handle error here.
