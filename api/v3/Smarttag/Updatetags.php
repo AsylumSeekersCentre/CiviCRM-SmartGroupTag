@@ -9,6 +9,7 @@
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
 function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
+// There are no required arguments for this.
 //  $spec['magicword']['api.required'] = 1;
 }
 
@@ -82,16 +83,7 @@ function contact_get_smart_group($group_name) {
   }
 }
 
-function get_tag_id ($tag) {
-  $data = civicrm_api3('Tag', 'get', array(
-    'sequential' => 1,
-    'name' => $tag,
-    'rowCount' => 0,
-  ));
-  return $data['id'];
-}
-
-function verbose_get_tag_id ($tagname) {
+function get_tag_id ($tagname) {
 
   $tag_id = null;
 
@@ -176,8 +168,14 @@ function delete_tag_from_contacts($tag_id, $contacts) {
   return $tally;
 }
 
-function compare_contacts_by_id($contact1, $contact2) {
-  return (int)$contact1.['contact_id'] - (int)$contact2.['contact_id'];
+function subtract_contacts($arr1, $arr2) {
+  $result = array();
+  foreach ($arr1 as $contact_id => $contact_data) {
+    if (!array_key_exists($contact_id, $arr2)) {
+      $result[$contact_id] = $contact_data;
+    }
+  };
+  return $result;
 }
 
 function delete_and_apply_tags($tag_map) {
@@ -185,15 +183,20 @@ function delete_and_apply_tags($tag_map) {
   foreach ($tag_map as $tagname => $smart_group) {
     try {
 
-      $tag_id = verbose_get_tag_id ($tagname);
+      $tag_id = get_tag_id ($tagname);
       $tagged_contacts = get_tagged_contacts($tag_id);
       $sgroup_contacts = contact_get_smart_group ($smart_group);
 
-      display_json($tagged_contacts);
-      display_json($sgroup_contacts);
+//      Use this to delete all tags for testing
+//      delete_tag_from_contacts($tag_id, $sgroup_contacts);
 
-      $contacts_to_delete_tag = array_udiff ($tagged_contacts, $sgroup_contacts, compare_contacts_by_id);
-      $contacts_to_add_tag = array_udiff ($sgroup_contacts, $tagged_contacts, compare_contacts_by_id);
+      $contacts_to_delete_tag = subtract_contacts ($tagged_contacts, $sgroup_contacts);
+      display_message("Contacts to delete tag:");
+      display_json($contacts_to_delete_tag);
+
+      $contacts_to_add_tag = subtract_contacts ($sgroup_contacts, $tagged_contacts);
+      display_message("Contacts to add tag:");
+      display_json($contacts_to_add_tag);
 
       $delete_tally = delete_tag_from_contacts ($tag_id, $contacts_to_delete_tag);
       $add_tally = add_tag_to_contacts ($tag_id, $contacts_to_add_tag);
@@ -201,7 +204,6 @@ function delete_and_apply_tags($tag_map) {
       $tally[$tagname]['delete'] = $delete_tally;
       $tally[$tagname]['add'] = $add_tally;
       $tally[$tagname]['confirm'] = sizeof($sgroup_contacts) - $add_tally;
-
     }
     catch (CiviCRM_API3_Exception $e) {
       $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
@@ -242,4 +244,16 @@ function civicrm_api3_smarttag_Updatetags($params) {
     return civicrm_api3_create_error($error_message);
   }
 }
+
+/* This is correct in a different context. It does not work in this program. */
+/*
+function get_tag_id ($tag) {
+  $data = civicrm_api3('Tag', 'get', array(
+    'sequential' => 1,
+    'name' => $tag,
+    'rowCount' => 0,
+  ));
+  return $data['id'];
+}
+*/
 
