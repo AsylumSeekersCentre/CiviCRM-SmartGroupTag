@@ -36,30 +36,37 @@ function echo_json($v) {
 }
 
 function get_group_id($group_name) {
+
   $params = array(
     'sequential' => 1,
     'title' => $group_name,
     'rowCount' => 0,
   );
+
   $table = civicrm_api3('Group', 'get', $params);
+
   $result = null;
   foreach ($table['values'] as $mgroup) {
     if ($mgroup['title'] == $group_name) {
       $result = $mgroup['id'];
     }
   };
+
   return $result;
 
 }
 
 function contact_get_smart_group($group_name) {
+
   $group_id = get_group_id($group_name);
-//  CRM_Core_Session::setStatus('Got group id ' . $group_id . ' for group ' . $group_name, 'Success', 'no-popup');
+
   if ($group_id == null) {
-    $error_message = 'No group named ' . $group_name;
-    log_error($error_message);
-    CRM_Core_Session::setStatus(ts($error_message), ts('contact_get_smart_group failure in SmartTag.UpdateTags'), 'no-popup');
+    // Error log will be handled by the exception resulting from processing
+    // the null return value later. This will only skip the bad mapping, it
+    // will not abort the whole process.
+    return null;
   }
+
   else {
    $params = array(
     'rowCount' => 0,
@@ -69,24 +76,17 @@ function contact_get_smart_group($group_name) {
       ),
     )
    );
-// This also works and is simpler than the above. Why is the above structure
-// recommended in the examples? It would make sense if we wanted to check if
-// the contact is in any of a set of groups, but for a single group I would
-// prefer the simple structure below, unless I'm missing something.
-//    $params = array();
-//    $params['group'] = $group_id;
-   
-//    CRM_Core_Session::setStatus('About to get contacts', 'Success', 'no-popup');
-    $result = civicrm_api3('Contact', 'get', $params);
-//    CRM_Core_Session::setStatus('Returning contacts', 'Success', 'no-popup');
-    return $result['values'];
+
+   $result = civicrm_api3('Contact', 'get', $params);
+   return $result['values'];
+
   }
+
 }
 
 function get_tag_id ($tagname) {
 
   $tag_id = null;
-
   $tag_record = civicrm_api3('Tag', 'get', array(
     'name' => $tag,
     'rowCount' => 0,
@@ -100,7 +100,6 @@ function get_tag_id ($tagname) {
   };
 
   return $tag_id;
-
 }
 
 function add_tag_to_contact ($tag_id, $contact_id) {
@@ -115,21 +114,29 @@ function add_tag_to_contact ($tag_id, $contact_id) {
 }
 
 function add_tag_to_contacts($tag_id, $contacts) {
+
   $tally = 0;
+
   foreach ($contacts as $contact_id => $contact) {
     add_tag_to_contact ($tag_id, $contact_id);
     $tally += 1;
   };
+
   return $tally;
+
 }
 
 function split_file_strings($strings) {
+
   $result = array();
+
   foreach ($strings as $string) {
     $pair = explode(',', $string);
     $result[ltrim(rtrim($pair[0]))] = ltrim(rtrim($pair[1]));
   };
+
   return $result;
+
 }
 
 function load_map($filename) {
@@ -141,54 +148,66 @@ function load_map($filename) {
 }
 
 function get_tagged_contacts ($tag_id) {
+
   $contactParams = array(
     'version' => 3,
     'tag'=> $tag_id,
     'rowCount' => 0,
   );
+
   return civicrm_api3("Contact","get", $contactParams)['values'];
+
 }
 
 function delete_tag_from_contact($tag_id, $contact_id) {
-  //echo 'Deleting ' . $tag_id . ' from ' . $contact_id . '\n';
+
   $params = array(
     'contact_id_h' => $contact_id,
     'tag_id' => $tag_id,
   );
+
   $result = civicrm_api3('EntityTag', 'delete', $params);
   return $result;
+
 }
 
 function delete_tag_from_contacts($tag_id, $contacts) {
+
   $tally = 0;
+
   foreach ($contacts as $contact_id => $contact_data) {
     delete_tag_from_contact ($tag_id, $contact_id);
     $tally += 1;
   };
+
   return $tally;
+  
 }
 
 function subtract_contacts($arr1, $arr2) {
   $result = array();
+
   foreach ($arr1 as $contact_id => $contact_data) {
     if (!array_key_exists($contact_id, $arr2)) {
       $result[$contact_id] = $contact_data;
     }
   };
+
   return $result;
+
 }
 
 function delete_and_apply_tags($tag_map) {
+
   $tally = array();
+
   foreach ($tag_map as $tagname => $smart_group) {
+
     try {
 
       $tag_id = get_tag_id ($tagname);
       $tagged_contacts = get_tagged_contacts($tag_id);
       $sgroup_contacts = contact_get_smart_group ($smart_group);
-
-//      Use this to delete all tags for testing
-//      delete_tag_from_contacts($tag_id, $sgroup_contacts);
 
       $contacts_to_delete_tag = subtract_contacts ($tagged_contacts, $sgroup_contacts);
       display_message("Contacts to delete tag:");
@@ -205,12 +224,15 @@ function delete_and_apply_tags($tag_map) {
       $tally[$tagname]['add'] = $add_tally;
       $tally[$tagname]['confirm'] = sizeof($sgroup_contacts) - $add_tally;
     }
+
     catch (CiviCRM_API3_Exception $e) {
       $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
       log_error($error_message);
       CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
     }
+
   }
+
   return $tally;
   
 }
@@ -226,6 +248,7 @@ function delete_and_apply_tags($tag_map) {
  * @throws API_Exception
  */
 function civicrm_api3_smarttag_Updatetags($params) {
+
   try {
     $starttime = time();
     $tag_map = load_map("map.txt");
@@ -238,22 +261,12 @@ function civicrm_api3_smarttag_Updatetags($params) {
 //    header("Refresh:0"); // FIXME I want to refresh the page to display status messages, but this does not work.
     return civicrm_api3_create_success($tally, $params, 'Smarttag', 'Updatetags');
   }
+
   catch (CiviCRM_API3_Exception $e) {
-    // Handle error here.
+    // Handle errors here.
     $error_message = $e->getMessage();
     return civicrm_api3_create_error($error_message);
   }
-}
 
-/* This is correct in a different context. It does not work in this program. */
-/*
-function get_tag_id ($tag) {
-  $data = civicrm_api3('Tag', 'get', array(
-    'sequential' => 1,
-    'name' => $tag,
-    'rowCount' => 0,
-  ));
-  return $data['id'];
 }
-*/
 
