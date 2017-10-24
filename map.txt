@@ -1,26 +1,2 @@
-Major Donor - Lifetime,z-Tag Major Donor - Lifetime
-Major Donor - Current,z-Tag Major Donor - Current
-Major Donor - Recent,z-Tag Major Donor - Recent
-Major Donor - Former,z-Tag Major Donor - Former
-Major Donor (Soft) - Lifetime,z-Tag Major Soft - Lifetime
-Major Donor (Soft) - Current,z-Tag Major Soft - Current
-Major Donor (Soft) - Recent,z-Tag Major Soft - Recent
-Major Donor (Soft) - Former,z-Tag Major Soft - Former
-Major Donor (Regular) - Current,z-Tag Major Regular - Current
-Regular Donor - Current,z-Tag Regular Donor - Current
-Regular Donor - Recent,z-Tag Regular Donor - Recent
-Regular Donor - Former,z-Tag Regular Donor - Former
-Community Fundraiser - Current,z-Tag Community Fundraiser - Current
-Community Fundraiser - Recent,z-Tag Community Fundraiser - Recent
-Community Fundraiser - Former,z-Tag Community Fundraiser - Former
-Workplace Giver - Current,z-Tag Workplace Giver - Current
-Workplace Giver - Recent,z-Tag Workplace Giver - Recent
-Workplace Giver - Former,z-Tag Workplace Giver - Former
-Grantor - Current,z-Tag Grantor - Current
-Grantor - Former,z-Tag Grantor - Former
-Bequestor - Completed,z-Tag Bequestor - Completed
-Bequestor - Confirmed,z-Tag Bequestor - Confirmed
-Volunteer - Active,z-Tag Volunteer - Active
-Volunteer - Inactive,z-Tag Volunteer - Inactive
-Volunteer - Former,z-Tag Volunteer - Former
-Volunteer - Blacklist,z-Tag Volunteer - Blacklist
+Major Donor,SomeGroup
+NonTag,Another Group
