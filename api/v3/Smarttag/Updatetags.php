@@ -210,13 +210,7 @@ function delete_and_apply_tags($tag_map) {
       $sgroup_contacts = contact_get_smart_group ($smart_group);
 
       $contacts_to_delete_tag = subtract_contacts ($tagged_contacts, $sgroup_contacts);
-      display_message("Contacts to delete tag:");
-      display_json($contacts_to_delete_tag);
-
       $contacts_to_add_tag = subtract_contacts ($sgroup_contacts, $tagged_contacts);
-      display_message("Contacts to add tag:");
-      display_json($contacts_to_add_tag);
-
       $delete_tally = delete_tag_from_contacts ($tag_id, $contacts_to_delete_tag);
       $add_tally = add_tag_to_contacts ($tag_id, $contacts_to_add_tag);
 
