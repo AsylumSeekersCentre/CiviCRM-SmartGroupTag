@@ -132,7 +132,16 @@ function delete_tag_from_contacts($tag_id, $contacts) {
   }
 }
 
-function delete_tag($tag) {
+function get_tagged_contacts ($tag) {
+  return civicrm_api3('Tag', 'get', array(
+    'name' => $tag,
+    'rowCount' => 0,
+  ));
+
+}
+
+/* dead code
+function delete_tag_from_all($tag) {
   $to_delete = civicrm_api3('Tag', 'get', array(
     'name' => $tag,
     'rowCount' => 0,
@@ -147,7 +156,9 @@ function delete_tag($tag) {
     }
   };
 }
+*/
 
+/* dead code
 function delete_tags($tag_map) {
   // No need to filter for sensible tags here, if the tag doesn't exist
   // the query will not return any contacts to process.
@@ -155,6 +166,7 @@ function delete_tags($tag_map) {
     delete_tag($tag);
   }
 }
+*/
 
 function apply_tags($tag_map) {
   $tally = array();
@@ -181,13 +193,20 @@ function apply_tags($tag_map) {
 }
 
 function delete_and_apply_tags($tag_map) {
-  $tally = array();
+//  $tally = array();
   foreach ($tag_map as $tag => $smart_group) {
     try {
 
-//      CRM_Core_Session::setStatus('Processing tag-group ' . $tag . ' - ' . $smart_group, 'Success', 'no-popup');
+      $tagged_contacts = get_tagged_contacts($tag);
+      $sgroup_contacts = contact_get_smart_group ($smart_group);
+
+      $contacts_to_delete_tag = subtract_list ($tagged_contacts, $sgroup_contacts);
+      $contacts_to_add_tag = subtract_list ($sgroup_contacts, $tagged_contacts);
+
+      delete_tag_from_contacts ($tag, $tags_to_delete);
+      add_tags ($tags_to_add);
+/*
       delete_tag($tag);
-//      CRM_Core_Session::setStatus('Deleted tag ' . $tag, 'Success', 'no-popup');
 
       if (!(array_key_exists($tag, $tally))) {
         $tally[$tag] = 0;
@@ -201,6 +220,7 @@ function delete_and_apply_tags($tag_map) {
           $tally[$tag] += 1;
         }
       };
+*/
     }
     catch (CiviCRM_API3_Exception $e) {
       $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
