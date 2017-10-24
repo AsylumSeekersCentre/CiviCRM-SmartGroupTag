@@ -16,6 +16,10 @@ function log_message($message) {
   CRM_Core_Error::debug_log_message($message);
 }
 
+function log_json($v) {
+  log_message (json_encode($v));
+}
+
 function echo_json($v) {
   echo '<pre>' . json_encode($v) . '</pre>';
 }
@@ -137,7 +141,6 @@ function get_tagged_contacts ($tag) {
     'name' => $tag,
     'rowCount' => 0,
   ));
-
 }
 
 /* dead code
@@ -193,20 +196,23 @@ function apply_tags($tag_map) {
 }
 
 function delete_and_apply_tags($tag_map) {
-//  $tally = array();
+  $tally = array();
   foreach ($tag_map as $tag => $smart_group) {
     try {
 
       $tagged_contacts = get_tagged_contacts($tag);
+      log_json($tagged_contacts);
+      /*
       $sgroup_contacts = contact_get_smart_group ($smart_group);
 
       $contacts_to_delete_tag = subtract_list ($tagged_contacts, $sgroup_contacts);
       $contacts_to_add_tag = subtract_list ($sgroup_contacts, $tagged_contacts);
 
-      delete_tag_from_contacts ($tag, $tags_to_delete);
-      add_tags ($tags_to_add);
+      delete_tag_from_contacts ($tag, $contacts_to_delete_tag);
+      add_tag_to_contacts ($tag, $contacts_to_add_tag);
+      */
 /*
-      delete_tag($tag);
+      delete_tag_from_all($tag);
 
       if (!(array_key_exists($tag, $tally))) {
         $tally[$tag] = 0;
