@@ -1,4 +1,2 @@
-Major Donor,Hungerford  
-Default,Hungerford
-NonTag,Hungerford 
-Nonsense,Nonsense2
+Major Donor,SomeGroup
+NonTag,Another Group
