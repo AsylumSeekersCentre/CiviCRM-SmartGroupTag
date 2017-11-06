@@ -88,7 +88,7 @@ function get_tag_id ($tagname) {
 
   $tag_id = null;
   $tag_record = civicrm_api3('Tag', 'get', array(
-    'name' => $tag,
+    'name' => $tagname,
     'rowCount' => 0,
   ));
 
@@ -220,9 +220,9 @@ function delete_and_apply_tags($tag_map) {
     }
 
     catch (CiviCRM_API3_Exception $e) {
-      $error_message = 'Could not apply tag ' . $tag . ':  ' . $e->getMessage();
+      $error_message = 'Could not process tag ' . $tagname . ':  ' . $e->getMessage();
       log_error($error_message);
-      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
+//      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
     }
 
   }
