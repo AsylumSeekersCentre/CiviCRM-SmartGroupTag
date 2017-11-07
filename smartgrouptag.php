@@ -122,6 +122,18 @@ function smartgrouptag_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _smartgrouptag_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
+/**
+ * Implementation of hook_civicrm_entityTypes
+ */
+function smartgrouptag_civicrm_entityTypes (&$entityTypes) {
+  $entityTypes['CRM_Smartgrouptag_DAO_Smarttag'] = array(
+    'name' => 'Smartgrouptag',
+    'class' => 'CRM_Smartgrouptag_DAO_Smarttag',
+    'table' => 'civirm_smarttag',
+  );
+}
+
+
 // --- Functions below this ship commented out. Uncomment as required. ---
 
 /**

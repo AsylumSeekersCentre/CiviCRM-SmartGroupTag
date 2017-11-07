@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Smartgrouptag</base>
+  <class>Smarttag</class>
+  <name>civicrm_smarttag_map</name>
+  <comment>Tag-SmartGroup mapping</comment>
+  <add>4.4</add>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique Smarttag mapping ID</comment>
+    <add>4.4</add>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>tag_id</name>
+    <type>int unsigned</type>
+    <comment>FK to tag</comment>
+    <add>4.4</add>
+  </field>
+  <foreignKey>
+    <name>tag_id</name>
+    <table>civicrm_tag</table>
+    <key>id</key>
+    <add>4.4</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>group_id</name>
+    <type>int unsigned</type>
+    <comment>FK to group</comment>
+    <add>4.4</add>
+  </field>
+  <foreignKey>
+    <name>group_id</name>
+    <table>civicrm_group</table>
+    <key>id</key>
+    <add>4.4</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+</table>
