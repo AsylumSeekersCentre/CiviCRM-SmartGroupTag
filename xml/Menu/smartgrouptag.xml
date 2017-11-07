@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/smartgrouptag-config</path>
+    <page_callback>CRM_Smartgrouptag_Page_SmartGroupTagConfigPage</page_callback>
+    <title>SmartGroupTagConfigPage</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
