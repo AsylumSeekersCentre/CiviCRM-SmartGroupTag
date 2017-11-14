@@ -8,6 +8,7 @@ class CRM_Smartgrouptag_BAO_Smarttag extends CRM_Smartgrouptag_DAO_Smarttag {
    * @param array $params key-value pairs
    * @return CRM_Smartgrouptag_DAO_Smarttag|NULL
    *
+  */
   public static function create($params) {
     $className = 'CRM_Smartgrouptag_DAO_Smarttag';
     $entityName = 'Smarttag';
@@ -20,6 +21,16 @@ class CRM_Smartgrouptag_BAO_Smarttag extends CRM_Smartgrouptag_DAO_Smarttag {
     CRM_Utils_Hook::post($hook, $entityName, $instance->id, $instance);
 
     return $instance;
-  } */
+  } 
+
+  public static function retrieve(&$params, &$defaults) {
+    $ent = new CRM_Smartgrouptag_BAO_Smarttag();
+    $ent->copyValues($params);
+    if ($ent->find(TRUE)) {
+      CRM_Core_DAO::storeValues($ent, $defaults);
+      return $ent;
+    }
+    return NULL;
+  }
 
 }

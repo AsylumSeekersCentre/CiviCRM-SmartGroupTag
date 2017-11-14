@@ -127,9 +127,9 @@ function smartgrouptag_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function smartgrouptag_civicrm_entityTypes (&$entityTypes) {
   $entityTypes['CRM_Smartgrouptag_DAO_Smarttag'] = array(
-    'name' => 'Smartgrouptag',
+    'name' => 'Smarttag',
     'class' => 'CRM_Smartgrouptag_DAO_Smarttag',
-    'table' => 'civirm_smarttag',
+    'table' => 'civicrm_smarttag_map',
   );
 }
 

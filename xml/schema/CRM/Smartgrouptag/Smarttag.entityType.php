@@ -6,6 +6,6 @@ return array (
   array (
     'name' => 'Smarttag',
     'class' => 'CRM_Smartgrouptag_DAO_Smarttag',
-    'table' => 'civicrm_smarttag',
+    'table' => 'civicrm_smarttag_map',
   ),
 );

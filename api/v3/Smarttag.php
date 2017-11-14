@@ -42,5 +42,6 @@ function civicrm_api3_smarttag_delete($params) {
  * @throws API_Exception
  */
 function civicrm_api3_smarttag_get($params) {
+  CRM_Core_Session::setStatus(json_encode($params), 'Error', 'no-popup');
   return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
