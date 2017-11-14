@@ -12,9 +12,10 @@ class CRM_Smartgrouptag_Page_SmartGroupTagConfigPage extends CRM_Core_Page {
       'sequential' => 1,
     );
     $this->assign('currentTime', date('Y-m-d H:i:s'));
-    $this->assign('tagMap', civicrm_api3("Smarttag", "get", $params).values);
+    $this->assign('tagMap', civicrm_api3("Smarttag", "get", $params)['values']);
     $this->assign('tags', civicrm_api3("Tag", "get", $params)['values']);
     $this->assign('groups', civicrm_api3("Group", "get", $params)['values']);
+    CRM_Core_Session::setStatus(json_encode (civicrm_api3("Smarttag", "get", $params)['values']), 'Error', 'no-popup');
 
     parent::run();
   }

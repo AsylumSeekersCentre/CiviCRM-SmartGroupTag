@@ -4,9 +4,15 @@
    alert("Button pressed");
  };
  function pressButton($) {
-   var tag = CRM.$('#tagSelect').find(":selected").text();
-   var group = CRM.$('#groupSelect').find(":selected").text();
-   alert("Tag = " + tag + " Group = " + group);
+   var tag = CRM.$('#tagSelect').find(":selected").val();
+   var group = CRM.$('#groupSelect').find(":selected").val();
+   CRM.api3('Smarttag', 'bindpair', {
+     "sequential": 1,
+     "tagId":tag,
+     "groupId":group
+     }).done(function(result) {
+       alert("Tag applied:\nTag = " + tag + " Group = " + group);
+   });
  };
  function onReady($) {
    CRM.$('#applyButton').click(pressButton);
@@ -25,10 +31,11 @@
 <p>{ts 1=$currentTime}(In your native language) The current time is %1.{/ts}</p>
 <p>Here is the current mapping:</p>
 <table width=800px>
-{foreach from=$tagMap key=tagId item=groupId}
+{foreach from=$tagMap item=row}
   <tr>
-    <td>{$tagId}</td>
-    <td>{$groupId}</td>
+    <td>{$row.id}</td>
+    <td>{$row.tag_id}</td>
+    <td>{$row.group_id}</td>
   </tr>
 {/foreach}
 </table>
