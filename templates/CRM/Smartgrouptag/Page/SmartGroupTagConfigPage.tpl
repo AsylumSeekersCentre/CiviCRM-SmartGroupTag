@@ -1,3 +1,21 @@
+{literal}
+<script>
+ function showAlert($) {
+   alert("Button pressed");
+ };
+ function pressButton($) {
+   var tag = CRM.$('#tagSelect').find(":selected").text();
+   var group = CRM.$('#groupSelect').find(":selected").text();
+   alert("Tag = " + tag + " Group = " + group);
+ };
+ function onReady($) {
+   CRM.$('#applyButton').click(pressButton);
+ };
+ CRM.$(document).ready(onReady);
+</script>
+{/literal}
+
+
 <h3>This is the configuration page for the SmartGroupTag extension.</h3>
 
 {* Example: Display a variable directly *}
@@ -24,7 +42,7 @@
      <div class="crm-block crm-form-block crm-form-title-here-form-block">
        <p>Add mapping from tag:</p>
        <p>
-       <select>
+       <select id="tagSelect">
          <option value=-1>None</option>
        {foreach from=$tags item=tagData}
          <option value={$tagData.id}>{$tagData.name}</option>
@@ -34,14 +52,15 @@
 
        <p>To group:</p>
        <p>
-       <select>
+       <select id="groupSelect">
          <option value=-1>None</option>
        {foreach from=$groups item=groupData}
          <option value={$groupData.id}>{$groupData.name}</option>
        {/foreach}
        </select>
        </p>
-       <a title="Add" class="button_name button" href="#">
+
+       <a title="Add" id="applyButton" class="button" href="#">
        <span>
        <div class="icon icon_name-icon"></div>
        Apply
