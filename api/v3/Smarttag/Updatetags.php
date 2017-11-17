@@ -56,9 +56,7 @@ function get_group_id($group_name) {
 
 }
 
-function contact_get_smart_group($group_name) {
-
-  $group_id = get_group_id($group_name);
+function contact_get_smart_group_id($group_id) {
 
   if ($group_id == null) {
     // Error log will be handled by the exception resulting from processing
@@ -84,6 +82,13 @@ function contact_get_smart_group($group_name) {
 
 }
 
+function contact_get_smart_group($group_name) {
+
+  $group_id = get_group_id($group_name);
+  return contact_get_smart_group_id($group_id);
+
+}
+
 function get_tag_id ($tagname) {
 
   $tag_id = null;
@@ -92,7 +97,7 @@ function get_tag_id ($tagname) {
     'rowCount' => 0,
   ));
 
-  // This foreach is expected to unpack and process a single result.
+  // This foreach is expected to unpack a single result.
   foreach($tag_record['values'] as $value) { 
     if ($value['name'] == $tagname) {
       $tag_id = $value['id'];
@@ -231,6 +236,41 @@ function delete_and_apply_tags($tag_map) {
   
 }
 
+function delete_and_apply_tags_from_table() {
+
+  $tally = array();
+
+  $tag_map = civicrm_api3("Smarttag", "get", array() )['values'];
+
+  foreach ($tag_map as $map_id) {
+
+    try {
+      $tag_id = $map_id['tag_id'];
+      $group_id = $map_id['group_id'];
+
+      $tagged_contacts = get_tagged_contacts($tag_id);
+      $sgroup_contacts = contact_get_smart_group_id ($smart_group_id);
+
+      $contacts_to_delete_tag = subtract_contacts ($tagged_contacts, $sgroup_contacts);
+      $contacts_to_add_tag = subtract_contacts ($sgroup_contacts, $tagged_contacts);
+      $delete_tally = delete_tag_from_contacts ($tag_id, $contacts_to_delete_tag);
+      $add_tally = add_tag_to_contacts ($tag_id, $contacts_to_add_tag);
+
+      $tally[$tag_id]['delete'] = $delete_tally;
+      $tally[$tag_id]['add'] = $add_tally;
+      $tally[$tag_id]['confirm'] = sizeof($sgroup_contacts) - $add_tally;
+    }
+
+    catch (CiviCRM_API3_Exception $e) {
+      $error_message = 'Could not process tag ' . $tag_id . ':  ' . $e->getMessage();
+      log_error($error_message);
+//      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
+    }
+  }
+
+  return $tally;
+  
+}
 
 /**
  * Smarttag.Updatetags API
@@ -245,8 +285,8 @@ function civicrm_api3_smarttag_Updatetags($params) {
 
   try {
     $starttime = time();
-    $tag_map = $params.tag_map; //load_map("map.txt"); // to use file instead
-    $tally = delete_and_apply_tags($tag_map);
+//    $tag_map = load_map("map.txt"); // to use file instead
+    $tally = delete_and_apply_tags_from_table();
     $endtime = time();
     $time_taken = $endtime - $starttime;
     $tally['time taken'] = $time_taken;

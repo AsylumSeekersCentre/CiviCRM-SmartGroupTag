@@ -1,12 +1,13 @@
 {literal}
 <script>
  function pressButton($) {
-   CRM.api3('Smarttag', 'updatetags', {"sequential": 1,
+//     CRM.alert("Apply pressed, but nothing will be done.\n map : \n" + CRM.$('textarea').val());
+   CRM.api3('Smarttag', 'updatemap', {"sequential": 1,
        "tag_map":CRM.$('textarea').val()
-     }).done(function(result) {
-     CRM.alert("Apply pressed, map = \n" + CRM.$('textarea').val());
-     // do something
-   });
+     }); // .done(function(result) {
+//     CRM.alert("Apply pressed, map = \n" + CRM.$('textarea').val());
+//   });
+
 //   var tag = CRM.$('#tagSelect').find(":selected").val();
 //   var group = CRM.$('#groupSelect').find(":selected").val();
 //   CRM.api3('Smarttag', 'bindpair', {
@@ -50,7 +51,7 @@
   </div>
   <div class="crm-accordion-body">
      <div class="crm-block crm-form-block crm-form-title-here-form-block">
-
+       <p> This feature is not working: </p>
        <p> Paste the new mapping CSV data here (tag first, then group):</p>
       <p>
        <textarea rows="26" cols="80">
