@@ -245,7 +245,7 @@ function civicrm_api3_smarttag_Updatetags($params) {
 
   try {
     $starttime = time();
-    $tag_map = load_map("map.txt");
+    $tag_map = $params.tag_map; //load_map("map.txt"); // to use file instead
     $tally = delete_and_apply_tags($tag_map);
     $endtime = time();
     $time_taken = $endtime - $starttime;
