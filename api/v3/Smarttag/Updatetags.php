@@ -235,6 +235,27 @@ function delete_and_apply_tags($tag_map) {
   
 }
 
+function get_single_name($v) {
+  $result = "";
+  foreach ($v as $key => $value) {
+    if ($value['name']) {
+      $result = $value['name'];
+    }
+  };
+  return $result;
+}
+
+function get_tag_name($tag_id) {
+  $params = array(
+    'id' => $tag_id,
+    'sequentual' => 1,
+  );
+
+  $raw = civicrm_api3('Tag', 'get', $params);
+  $name = get_single_name($raw['values']);
+  return $name;
+}
+
 function delete_and_apply_tags_from_table() {
 
   $tally = array();
@@ -246,6 +267,7 @@ function delete_and_apply_tags_from_table() {
     try {
       $tag_id = $map_id['tag_id'];
       $group_id = $map_id['group_id'];
+      $tag_name = get_tag_name($tag_id);
 
 //      display_message('Tag id = '.$tag_id.' Group id = '.$group_id);
 
@@ -258,9 +280,9 @@ function delete_and_apply_tags_from_table() {
       $delete_tally = delete_tag_from_contacts ($tag_id, $contacts_to_delete_tag);
       $add_tally = add_tag_to_contacts ($tag_id, $contacts_to_add_tag);
 
-      $tally[$tag_id]['delete'] = $delete_tally;
-      $tally[$tag_id]['add'] = $add_tally;
-      $tally[$tag_id]['confirm'] = sizeof($sgroup_contacts) - $add_tally;
+      $tally[$tag_name]['delete'] = $delete_tally;
+      $tally[$tag_name]['add'] = $add_tally;
+      $tally[$tag_name]['confirm'] = sizeof($sgroup_contacts) - $add_tally;
     }
 
     catch (CiviCRM_API3_Exception $e) {
