@@ -247,8 +247,11 @@ function delete_and_apply_tags_from_table() {
       $tag_id = $map_id['tag_id'];
       $group_id = $map_id['group_id'];
 
+//      display_message('Tag id = '.$tag_id.' Group id = '.$group_id);
+
       $tagged_contacts = get_tagged_contacts($tag_id);
-      $sgroup_contacts = contact_get_smart_group_id ($smart_group_id);
+      $sgroup_contacts = contact_get_smart_group_id ($group_id);
+//      display_message('Tagged contacts = '.(json_encode($tagged_contacts)).' Group contacts = '.(json_encode($sgroup_contacts)));
 
       $contacts_to_delete_tag = subtract_contacts ($tagged_contacts, $sgroup_contacts);
       $contacts_to_add_tag = subtract_contacts ($sgroup_contacts, $tagged_contacts);
@@ -265,6 +268,7 @@ function delete_and_apply_tags_from_table() {
       log_error($error_message);
 //      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
     }
+
   }
 
   return $tally;
