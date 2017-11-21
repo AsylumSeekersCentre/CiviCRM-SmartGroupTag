@@ -14,7 +14,7 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 }
 
 function log_error($message) {
-  CRM_Core_Error::debug_log_message($message);
+  CRM_Core_Error::debug_log_message($message, true);
 //  CRM_Core_Session::setStatus(ts($message), 'Error', 'no-popup');
 }
 

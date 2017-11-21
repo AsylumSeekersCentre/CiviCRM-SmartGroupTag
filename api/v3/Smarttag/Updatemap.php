@@ -30,7 +30,6 @@ function empty_map_table() {
 
   $rows = civicrm_api3("Smarttag","get", $contactParams)['values'];
   foreach ($rows as $row) {
-//    display_message(json_encode($row));
     $params = array(
       'id' => $row['id'],
     );
@@ -54,11 +53,11 @@ function create_map($tag_map) {
       );
 
       civicrm_api3('Smarttag', 'create', $params);
-      log_success("Tag name: ".$tag_name." Group name: ".$group_name);
+      log_success("Success. Tag name: ".$tag_name." Group name: ".$group_name);
     }
     else {
       log_error("Invalid mapping: ".$tag_name." : ".$group_name);
-//      CRM_Core_Session::setStatus("Invalid mapping: ".$tag_id." : ".$group_id, ts('Update'), 'no-popup');
+      CRM_Core_Session::setStatus("Invalid mapping: ".$tag_name." : ".$group_name, ts('Update'), 'no-popup');
     }
   }
 }

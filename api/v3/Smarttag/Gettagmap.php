@@ -14,6 +14,35 @@ function _civicrm_api3_smarttag_Gettagmap_spec(&$spec) {
 //  $spec['magicword']['api.required'] = 1;
 }
 
+/*
+function get_tag_name($tag_id) {
+  $params = array(
+    'id' => $tag_id,
+  );
+
+  $result = civicrm_api3('EntityTag', 'get', $params);
+  display_message(json_encode($result));
+  return $result['name']
+}
+
+function get_group_name($id) {
+  $params = array(
+    'id' => $id,
+  );
+
+  $result = civicrm_api3('Group', 'get', $params);
+  display_message(json_encode($result));
+  return $result['name']
+}
+
+function get_names($raw) {
+  $result = array(
+    'tag_id' => get_tag_name($raw['tag_id']);
+    'group_id' => get_group_name($raw['group_id']);
+  );
+  return $result;
+}
+*/
 
 /**
  * Smarttag.GetTagMap API
@@ -36,7 +65,9 @@ function civicrm_api3_smarttag_Gettagmap($params) {
     );
 
     $returnValues = civicrm_api3("Smarttag", "get", $contactParams);
+//    $raw = civicrm_api3("Smarttag", "get", $contactParams);
 //    $returnValues = civicrm_api3_smarttag_get ($contactParams);
+//    $returnValues = array_map(get_names, $raw);
 
     return civicrm_api3_create_success($returnValues, $params, 'NewEntity', 'NewAction');
 

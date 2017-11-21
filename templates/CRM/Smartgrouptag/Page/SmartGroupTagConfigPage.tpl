@@ -34,7 +34,7 @@
 {* Example: Display a translated string -- which happens to include a variable *}
 <p>{ts 1=$currentTime}(In your native language) The current time is %1.{/ts}</p>
 <p>Here is the current mapping:</p>
-<table width=800px>
+<table width=100% border=1px>
 {foreach from=$tagMap item=row}
   <tr>
     <td>{$row.id}</td>
@@ -44,19 +44,19 @@
 {/foreach}
 </table>
 
-
 <div class="crm-accordion-wrapper collapsed">
   <div class="crm-accordion-header">
     Replace
   </div>
   <div class="crm-accordion-body">
      <div class="crm-block crm-form-block crm-form-title-here-form-block">
-       <p> This feature is not working: </p>
        <p> Paste the new mapping CSV data here (tag first, then group):</p>
-      <p>
-       <textarea rows="26" cols="80">
-       </textarea>
-      </p>
+<p>
+<textarea rows="26" cols="80">
+{foreach from=$tagMap item=row}
+{$row.tag_id},{$row.group_id}
+{/foreach}</textarea>
+</p>
        <a title="Apply" id="applyButton" class="button" href="javascript: void(0);">
        <span>
        <div class="icon icon_name-icon"></div>
