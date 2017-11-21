@@ -30,7 +30,7 @@ function empty_map_table() {
 
   $rows = civicrm_api3("Smarttag","get", $contactParams)['values'];
   foreach ($rows as $row) {
-    display_message(json_encode($row));
+//    display_message(json_encode($row));
     $params = array(
       'id' => $row['id'],
     );
@@ -46,14 +46,20 @@ function create_map($tag_map) {
 
     $tag_id = get_tag_id ($tag_name);
     $group_id = get_group_id ($group_name);
+    if ($tag_id && $group_id) {
 
-    $params = array(
-      'tag_id' => $tag_id,
-      'group_id' => $group_id,
-    );
+      $params = array(
+        'tag_id' => $tag_id,
+        'group_id' => $group_id,
+      );
 
-    civicrm_api3('Smarttag', 'create', $params);
-
+      civicrm_api3('Smarttag', 'create', $params);
+      log_success("Tag name: ".$tag_name." Group name: ".$group_name);
+    }
+    else {
+      log_error("Invalid mapping: ".$tag_name." : ".$group_name);
+//      CRM_Core_Session::setStatus("Invalid mapping: ".$tag_id." : ".$group_id, ts('Update'), 'no-popup');
+    }
   }
 }
 
@@ -69,9 +75,9 @@ function create_map($tag_map) {
 function civicrm_api3_smarttag_Updatemap($params) {
   include 'Updatetags.php';
   $tag_map = split_strings($params['tag_map']);
-  CRM_Core_Session::setStatus(ts(json_encode($tag_map)), ts('Update'), 'no-popup');
+//  CRM_Core_Session::setStatus(ts(json_encode($tag_map)), ts('Update'), 'no-popup');
   empty_map_table();
   create_map($tag_map);
-  CRM_Core_Session::setStatus("Something done!", ts('Update'), 'no-popup');
+//  CRM_Core_Session::setStatus("Something done!", ts('Update'), 'no-popup');
   return civicrm_api3_create_success(array(), $params, 'Smarttag', 'Updatemap');
 }

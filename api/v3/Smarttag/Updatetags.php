@@ -15,7 +15,7 @@ function _civicrm_api3_smarttag_Updatetags_spec(&$spec) {
 
 function log_error($message) {
   CRM_Core_Error::debug_log_message($message);
-  CRM_Core_Session::setStatus(ts($message), 'Error', 'no-popup');
+//  CRM_Core_Session::setStatus(ts($message), 'Error', 'no-popup');
 }
 
 function display_message($message) {
@@ -24,7 +24,7 @@ function display_message($message) {
 
 function log_success($message) {
   CRM_Core_Error::debug_log_message($message);
-  CRM_Core_Session::setStatus(ts($message), 'Success', 'no-popup');
+//  CRM_Core_Session::setStatus(ts($message), 'Success', 'no-popup');
 }
 
 function display_json($v) {
@@ -227,7 +227,6 @@ function delete_and_apply_tags($tag_map) {
     catch (CiviCRM_API3_Exception $e) {
       $error_message = 'Could not process tag ' . $tagname . ':  ' . $e->getMessage();
       log_error($error_message);
-//      CRM_Core_Session::setStatus(ts($error_message), ts('apply_tags failure in SmartTag.UpdateTags'), 'no-popup');
     }
 
   }
