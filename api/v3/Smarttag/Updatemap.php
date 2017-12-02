@@ -28,7 +28,12 @@ function split_strings($big_string) {
 
 function empty_map_table() {
 
-  $rows = civicrm_api3("Smarttag","get", $contactParams)['values'];
+  $params = array(
+    'sequential' => 1,
+    'version' => 3,
+    'rowCount' => 0,
+  );
+  $rows = civicrm_api3("Smarttag","get", $params)['values'];
   foreach ($rows as $row) {
     $params = array(
       'id' => $row['id'],
