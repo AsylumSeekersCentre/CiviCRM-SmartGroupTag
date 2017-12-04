@@ -260,7 +260,7 @@ function delete_and_apply_tags_from_table() {
 
   $tally = array();
 
-  $tag_map = civicrm_api3("Smarttag", "get", array() )['values'];
+  $tag_map = civicrm_api3("Smarttag", "get", array('rowCount' => 0) )['values'];
 
   foreach ($tag_map as $map_id) {
 

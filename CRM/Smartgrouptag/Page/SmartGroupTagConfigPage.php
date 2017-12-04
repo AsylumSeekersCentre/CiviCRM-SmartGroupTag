@@ -63,6 +63,7 @@ class CRM_Smartgrouptag_Page_SmartGroupTagConfigPage extends CRM_Core_Page {
     // Example: Assign a variable for use in a template
     $params = array(
       'sequential' => 1,
+      'rowCount' => 0
     );
     $this->assign('currentTime', date('Y-m-d H:i:s'));
     $raw = civicrm_api3("Smarttag", "get", $params)['values'];
