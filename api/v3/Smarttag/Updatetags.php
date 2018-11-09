@@ -72,7 +72,8 @@ function contact_get_smart_group_id($group_id) {
       'IN' => array(
         '0' => $group_id,
       ),
-    )
+    ),
+    'return' => ['id']
    );
 
    $result = civicrm_api3('Contact', 'get', $params);
@@ -158,6 +159,7 @@ function get_tagged_contacts ($tag_id) {
     'version' => 3,
     'tag'=> $tag_id,
     'rowCount' => 0,
+    'return' => ["id"]
   );
 
   return civicrm_api3("Contact","get", $contactParams)['values'];
